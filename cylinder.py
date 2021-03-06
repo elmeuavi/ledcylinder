@@ -16,21 +16,25 @@ PI=True
 
 if PI:
     #from neopixel import *
+    #I'm using this other libraries,... but you can change to generic neopixel.
     from rpi_ws281x import *
+    #how to install this libraryes to empty raspberry
+    #sudo apt-get update
+    #sudo pip3 install adafruit-circuitpython-neopixel
+    #sudo pip3 install rpi_ws281x
+    #sudo python3 -m pip install --force-reinstall adafruit-blinka
+    #sudo apt-get -y install build-essential python-dev git scons swig
+    #git clone http://github.com/jgarff/rpi_ws281x.git
+
 
 else:
     import pygame
     from pygame.locals import *
 
 SIZE=20;
-#FPS = 15
-#WINDOWWIDTH = 400
-#WINDOWHEIGHT = 100
-#BOXSIZE = 20
 OFFSET_BEGIN=60
 BOARDWIDTH = 15
-LAST_COL_XEVI= BOARDWIDTH-1
-BOARDHEIGHT = 5
+BOARDHEIGHTLETTER = 5
 BLANK = '.'
 
 mask = bytearray([1,2,4,8,16,32,64,128])
@@ -109,7 +113,7 @@ matrix = matrixOrdenada
 
 display_cursor = 0 ;
 
-display = [[0 for x in range(BOARDWIDTH)] for y in range(BOARDHEIGHT)]
+display = [[0 for x in range(BOARDWIDTH)] for y in range(BOARDHEIGHTLETTER)]
 print(display)
 
 # Main program logic follows:
@@ -145,14 +149,10 @@ def main():
             
             #time.sleep(5)
             matrix = matrixGirada 
-            scroll_text_display('M O L T  ',random.randrange(0,0xFFFFFF,2),75)
-            #scroll_text_display('M O L T E S   F E L I C I T A T S   J U L I A ',random.randrange(0,0xFFFFFF,2),40)
+            scroll_text_display('F R E E D O M   C A T A L A N   P O L I T I C A L   P R I S I O N E R S .   F R E E D O M   P U I G D E M O N T .  ',random.randrange(0,0xFFFFFF,2),75)
             
-            #scroll_text_display('M O L T E S    F E L I C I T A T S    J U L I A                ',random.randrange(0,0xFFFFFF,2),75)
-            #scroll_text_display('M O L T   B O N A   N I T   A   T O T H O M              ',random.randrange(0,0xFFFFFF,2),75)
-            
-            #colorRandom(strip, 5000)
-            #clear_display()
+            colorRandom(strip, 5000)
+            clear_display()
             matrix = matrixOrdenada 
             colorWipe(strip, 0, 255, 0,25)  # GREEN wipe
             colorWipe(strip, 0, 0, 255,25)  # BLUE wipe
@@ -192,13 +192,13 @@ def drawPixel(x,y,color):
 
 def clear_display():
     global display
-    display = [[0 for x in range(BOARDWIDTH)] for y in range(BOARDHEIGHT)]
+    display = [[0 for x in range(BOARDWIDTH)] for y in range(BOARDHEIGHTLETTER)]
     draw_display()
 
 def draw_display():
     if PI:
         for x in range(0,BOARDWIDTH):
-            for y in range(0,BOARDHEIGHT):
+            for y in range(0,BOARDHEIGHTLETTER):
                 if y<5:  # xevi
                     strip.setPixelColor(matrix[y*BOARDWIDTH+x]+OFFSET_BEGIN,
                                         Color(   int((display[y][x]>>8)&0xFF)   , int(display[y][x]>>16)   , int(display[y][x]&0xFF)  ))
@@ -231,22 +231,22 @@ def scroll_text_display(string,color,wait_ms):
             a=font5x3[ord(string[c])][i]
             for j in range(0,5):       # alçada
                 if a&mask[j]:
-                    display[j][LAST_COL_XEVI]=color;
+                    display[j][BOARDWIDTH-1]=color;
                 else:
-                    display[j][LAST_COL_XEVI] =0;
+                    display[j][BOARDWIDTH-1] =0;
             draw_display()
             display = numpy.roll(display,-1,axis=1)
             time.sleep(wait_ms / 1000.0)
         # add zero coulumn after every letter
         for j in range(0, 5):
-            display[j][LAST_COL_XEVI] = 0;
+            display[j][BOARDWIDTH-1] = 0;
         draw_display()
         display = numpy.roll(display,-1,axis=1)
         time.sleep(wait_ms / 1000.0)
     #shift text out of display (20 pixel)
     for i in range(0,BOARDWIDTH):
         for j in range(0, 5):
-            display[j][LAST_COL_XEVI] = 0;
+            display[j][BOARDWIDTH-1] = 0;
         draw_display()
         display = numpy.roll(display, -1, axis=1)
         time.sleep(wait_ms / 1000.0)

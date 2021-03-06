@@ -8,22 +8,28 @@ import argparse
 from font5x3 import font5x3
 from itertools import chain
 import numpy
+#sudo apt-get install libatlas-base-dev
+#
 
 # False for simulation mode, True for using a Raspberry PI
-PI=False
+PI=True
 
 if PI:
-    from neopixel import *
+    #from neopixel import *
+    from rpi_ws281x import *
+
 else:
     import pygame
     from pygame.locals import *
 
 SIZE=20;
-FPS = 15
-WINDOWWIDTH = 400
-WINDOWHEIGHT = 100
-BOXSIZE = 20
-BOARDWIDTH = 20
+#FPS = 15
+#WINDOWWIDTH = 400
+#WINDOWHEIGHT = 100
+#BOXSIZE = 20
+OFFSET_BEGIN=60
+BOARDWIDTH = 15
+LAST_COL_XEVI= BOARDWIDTH-1
 BOARDHEIGHT = 5
 BLANK = '.'
 
@@ -53,7 +59,7 @@ COLORS      = (BLUE,GREEN,RED,YELLOW,CYAN,MAGENTA,ORANGE)
 LIGHTCOLORS = (LIGHTBLUE, LIGHTGREEN, LIGHTRED, LIGHTYELLOW)
 
 # LED strip configuration:
-LED_COUNT      = 60     # Number of LED pixels.
+LED_COUNT      = 210     # Number of LED pixels.
 LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
 LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
@@ -70,19 +76,45 @@ else:
     strip=[]
 
 # Zig-Zag resorting array for cylinder matrix
-matrix =  [0, 9, 10, 19, 20, 29, 30, 39, 40, 49, 50, 59] #60, 69, 70, 79, 80, 89, 90, 99,
-	1, 8, 11, 18, 21, 28, 31, 38, 41, 48, 51, 58, #61, 68, 71, 78, 81, 88, 91, 98,
-	2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57, #62, 67, 72, 77, 82, 87, 92, 97,
-	3, 6, 13, 16, 23, 26, 33, 36, 43, 46, 53, 56, #63, 66, 73, 76, 83, 86, 93, 96,
-	4, 5, 14, 15, 24, 25, 34, 35, 44, 45, 54, 55,# 64, 65, 74, 75, 84, 85, 94, 95]
+matrixOriginal =  [0, 9, 10, 19, 20, 29, 30, 39, 40, 49, 50, 59, 60, 69, 70, 79, 80, 89, 90, 99,
+	1, 8, 11, 18, 21, 28, 31, 38, 41, 48, 51, 58, 61, 68, 71, 78, 81, 88, 91, 98,
+	2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57, 62, 67, 72, 77, 82, 87, 92, 97,
+	3, 6, 13, 16, 23, 26, 33, 36, 43, 46, 53, 56, 63, 66, 73, 76, 83, 86, 93, 96,
+	4, 5, 14, 15, 24, 25, 34, 35, 44, 45, 54, 55, 64, 65, 74, 75, 84, 85, 94, 95]
+    
+matrixOrdenada =   [9,10,29,30,49,50,69,70,89,90,109,110,129,130,149,
+            8,11,28,31,48,51,68,71,88,91,108,111,128,131,148,
+            7,12,27,32,47,52,67,72,87,92,107,112,127,132,147,
+            6,13,26,33,46,53,66,73,86,93,106,113,126,133,146,
+            5,14,25,34,45,54,65,74,85,94,105,114,125,134,145,
+            4,15,24,35,44,55,64,75,84,95,104,115,124,135,144,
+            3,16,23,36,43,56,63,76,83,96,103,116,123,136,143,
+            2,17,22,37,42,57,62,77,82,97,102,117,122,137,142,
+            1,18,21,38,41,58,61,78,81,98,101,118,121,138,141,
+            0,19,20,39,40,59,60,79,80,99,100,119,120,139,140]
+
+matrixGirada = [7,12,27,32,47,52,67,72,87,92,107,112,127,132,147,
+            6,13,26,33,46,53,66,73,86,93,106,113,126,133,146,
+            5,14,25,34,45,54,65,74,85,94,105,114,125,134,145,
+            4,15,24,35,44,55,64,75,84,95,104,115,124,135,144,
+            3,16,23,36,43,56,63,76,83,96,103,116,123,136,143,
+            2,17,22,37,42,57,62,77,82,97,102,117,122,137,142,
+            1,18,21,38,41,58,61,78,81,98,101,118,121,138,141,
+            0,19,20,39,40,59,60,79,80,99,100,119,120,139,140,
+            9,10,29,30,49,50,69,70,89,90,109,110,129,130,149,
+            8,11,28,31,48,51,68,71,88,91,108,111,128,131,148]
+
+matrix = matrixOrdenada 
+
 
 display_cursor = 0 ;
 
 display = [[0 for x in range(BOARDWIDTH)] for y in range(BOARDHEIGHT)]
+print(display)
 
 # Main program logic follows:
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
+    global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT, matrix
     # Process arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--clear', action='store_true', help='clear the display on exit')
@@ -110,29 +142,38 @@ def main():
                     if event.type == pygame.QUIT:
                         sys.exit()
             print ('Color wipe animations.')
-
-            scroll_text_display('LED MATRIX CYLINDER',random.randrange(0,0xFFFFFF,2),40)
-            colorRandom(strip, 5000)
-            clear_display()
-            colorWipe(strip, 0, 255, 0,25)  # Blue wipe
-            colorWipe(strip, 0, 0, 255,25)  # Green wipe
-            colorWipe(strip, 255, 0, 0,25)  # Blue wipe
+            
+            #time.sleep(5)
+            matrix = matrixGirada 
+            scroll_text_display('M O L T  ',random.randrange(0,0xFFFFFF,2),75)
+            #scroll_text_display('M O L T E S   F E L I C I T A T S   J U L I A ',random.randrange(0,0xFFFFFF,2),40)
+            
+            #scroll_text_display('M O L T E S    F E L I C I T A T S    J U L I A                ',random.randrange(0,0xFFFFFF,2),75)
+            #scroll_text_display('M O L T   B O N A   N I T   A   T O T H O M              ',random.randrange(0,0xFFFFFF,2),75)
+            
+            #colorRandom(strip, 5000)
+            #clear_display()
+            matrix = matrixOrdenada 
+            colorWipe(strip, 0, 255, 0,25)  # GREEN wipe
+            colorWipe(strip, 0, 0, 255,25)  # BLUE wipe
+            colorWipe(strip, 255, 0, 0,25)  # RED wipe
             clear_display()
 
     except KeyboardInterrupt:
         if args.clear:
+            matrix = matrixOrdenada 
             colorWipe(strip, 0,0,0, 10)
 
 def colorWipe(strip, r,g,b, wait_ms=50):
-    for i in range(LED_COUNT):
-        draw_pixel(int(i%20),int(i/20),r,g,b)
+    for i in range(LED_COUNT-OFFSET_BEGIN):
+        draw_pixel(int(i%BOARDWIDTH),int(i/BOARDWIDTH),r,g,b)
         time.sleep(wait_ms/1000.0)
 
 def colorRandom(strip, cycles):
     for i in range(0,cycles):
-        a= random.randrange(0,200,1);
+        a= random.randrange(0,LED_COUNT-OFFSET_BEGIN,1);
         c=random.randrange(0,0xFFFFFF,1);
-        drawPixel(int(a%20),int(a/20),c)
+        drawPixel(int(a%BOARDWIDTH),int(a/BOARDWIDTH),c)
         time.sleep(1/1000.0)
 
 def drawPixel(x,y,color):
@@ -140,7 +181,7 @@ def drawPixel(x,y,color):
         return
     if PI:
         if (x>=0 and y>=0 and color >=0):
-            strip.setPixelColor(y*20+x,color)
+            strip.setPixelColor(y*BOARDWIDTH+x+OFFSET_BEGIN,color)
             strip.show()
     else:
         pygame.draw.rect(DISPLAYSURF, (color>>16,(color>>8)&0xFF,color&0xFF), (x*SIZE+1, y*SIZE+1, SIZE-2, SIZE-2))
@@ -156,9 +197,13 @@ def clear_display():
 
 def draw_display():
     if PI:
-        for x in range(0,20):
-            for y in range(0,5):
-                strip.setPixelColor(matrix[y*20+x],(Color(display[y][x]>>8)&0xFF, display[y][x]>>16, display[y][x]&0xFF))
+        for x in range(0,BOARDWIDTH):
+            for y in range(0,BOARDHEIGHT):
+                if y<5:  # xevi
+                    strip.setPixelColor(matrix[y*BOARDWIDTH+x]+OFFSET_BEGIN,
+                                        Color(   int((display[y][x]>>8)&0xFF)   , int(display[y][x]>>16)   , int(display[y][x]&0xFF)  ))
+                # ORIGINAL #strip.setPixelColor(matrix[y*20+x],
+                # ORIGINAL #                        (Color(display[y][x]>>8)&0xFF, display[y][x]>>16, display[y][x]&0xFF))
         strip.show()
     else:
         for x in range (0,20):
@@ -181,27 +226,27 @@ def print_char(char,cursor):
 def scroll_text_display(string,color,wait_ms):
     global display
     cursor=0
-    for c in range(0,len(string)):
-        for i in range(0,3):
+    for c in range(0,len(string)):     #c = caràcter de la cadena de caràters
+        for i in range(0,3):            #i = amplada del caràcter
             a=font5x3[ord(string[c])][i]
-            for j in range(0,5):
+            for j in range(0,5):       # alçada
                 if a&mask[j]:
-                    display[j][19]=color;
+                    display[j][LAST_COL_XEVI]=color;
                 else:
-                    display[j][19] =0;
+                    display[j][LAST_COL_XEVI] =0;
             draw_display()
             display = numpy.roll(display,-1,axis=1)
             time.sleep(wait_ms / 1000.0)
         # add zero coulumn after every letter
         for j in range(0, 5):
-            display[j][19] = 0;
+            display[j][LAST_COL_XEVI] = 0;
         draw_display()
         display = numpy.roll(display,-1,axis=1)
         time.sleep(wait_ms / 1000.0)
     #shift text out of display (20 pixel)
-    for i in range(0,20):
+    for i in range(0,BOARDWIDTH):
         for j in range(0, 5):
-            display[j][19] = 0;
+            display[j][LAST_COL_XEVI] = 0;
         draw_display()
         display = numpy.roll(display, -1, axis=1)
         time.sleep(wait_ms / 1000.0)
@@ -209,7 +254,7 @@ def scroll_text_display(string,color,wait_ms):
 
 def draw_pixel(x,y,r,g,b):
     if PI:
-        strip.setPixelColor(matrix[y*20+x],Color(g, r, b))
+        strip.setPixelColor(matrix[y*BOARDWIDTH+x]+OFFSET_BEGIN,Color(r, g, b))
         strip.show()
     else:
         pygame.draw.rect(DISPLAYSURF, (r,g,b), (x*SIZE+1, y*SIZE+1, SIZE-2, SIZE-2))

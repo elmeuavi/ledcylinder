@@ -53,7 +53,7 @@ COLORS      = (BLUE,GREEN,RED,YELLOW,CYAN,MAGENTA,ORANGE)
 LIGHTCOLORS = (LIGHTBLUE, LIGHTGREEN, LIGHTRED, LIGHTYELLOW)
 
 # LED strip configuration:
-LED_COUNT      = 100     # Number of LED pixels.
+LED_COUNT      = 60     # Number of LED pixels.
 LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
 LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
@@ -70,11 +70,11 @@ else:
     strip=[]
 
 # Zig-Zag resorting array for cylinder matrix
-matrix =  [0, 9, 10, 19, 20, 29, 30, 39, 40, 49, 50, 59, 60, 69, 70, 79, 80, 89, 90, 99,
-	1, 8, 11, 18, 21, 28, 31, 38, 41, 48, 51, 58, 61, 68, 71, 78, 81, 88, 91, 98,
-	2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57, 62, 67, 72, 77, 82, 87, 92, 97,
-	3, 6, 13, 16, 23, 26, 33, 36, 43, 46, 53, 56, 63, 66, 73, 76, 83, 86, 93, 96,
-	4, 5, 14, 15, 24, 25, 34, 35, 44, 45, 54, 55, 64, 65, 74, 75, 84, 85, 94, 95]
+matrix =  [0, 9, 10, 19, 20, 29, 30, 39, 40, 49, 50, 59] #60, 69, 70, 79, 80, 89, 90, 99,
+	1, 8, 11, 18, 21, 28, 31, 38, 41, 48, 51, 58, #61, 68, 71, 78, 81, 88, 91, 98,
+	2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57, #62, 67, 72, 77, 82, 87, 92, 97,
+	3, 6, 13, 16, 23, 26, 33, 36, 43, 46, 53, 56, #63, 66, 73, 76, 83, 86, 93, 96,
+	4, 5, 14, 15, 24, 25, 34, 35, 44, 45, 54, 55,# 64, 65, 74, 75, 84, 85, 94, 95]
 
 display_cursor = 0 ;
 

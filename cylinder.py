@@ -18,13 +18,13 @@ if PI:
     #from neopixel import *
     #I'm using this other libraries,... but you can change to generic neopixel.
     from rpi_ws281x import *
-    #how to install this libraryes to empty raspberry
-    #sudo apt-get update
-    #sudo pip3 install adafruit-circuitpython-neopixel
-    #sudo pip3 install rpi_ws281x
-    #sudo python3 -m pip install --force-reinstall adafruit-blinka
-    #sudo apt-get -y install build-essential python-dev git scons swig
-    #git clone http://github.com/jgarff/rpi_ws281x.git
+    #how to install this libraries to empty raspberry
+    #      sudo apt-get update
+    #      sudo pip3 install adafruit-circuitpython-neopixel
+    #      sudo pip3 install rpi_ws281x
+    #      sudo python3 -m pip install --force-reinstall adafruit-blinka
+    #      sudo apt-get -y install build-essential python-dev git scons swig
+    #      git clone http://github.com/jgarff/rpi_ws281x.git
 
 
 else:
@@ -79,12 +79,12 @@ if PI:
 else:
     strip=[]
 
-# Zig-Zag resorting array for cylinder matrix
-matrixOriginal =  [0, 9, 10, 19, 20, 29, 30, 39, 40, 49, 50, 59, 60, 69, 70, 79, 80, 89, 90, 99,
-	1, 8, 11, 18, 21, 28, 31, 38, 41, 48, 51, 58, 61, 68, 71, 78, 81, 88, 91, 98,
-	2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57, 62, 67, 72, 77, 82, 87, 92, 97,
-	3, 6, 13, 16, 23, 26, 33, 36, 43, 46, 53, 56, 63, 66, 73, 76, 83, 86, 93, 96,
-	4, 5, 14, 15, 24, 25, 34, 35, 44, 45, 54, 55, 64, 65, 74, 75, 84, 85, 94, 95]
+# Zig-Zag resorting array for cylinder matrix: Example of 5x20 led's
+#matrix =  [0, 9, 10, 19, 20, 29, 30, 39, 40, 49, 50, 59, 60, 69, 70, 79, 80, 89, 90, 99,
+#	1, 8, 11, 18, 21, 28, 31, 38, 41, 48, 51, 58, 61, 68, 71, 78, 81, 88, 91, 98,
+#	2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57, 62, 67, 72, 77, 82, 87, 92, 97,
+#	3, 6, 13, 16, 23, 26, 33, 36, 43, 46, 53, 56, 63, 66, 73, 76, 83, 86, 93, 96,
+#	4, 5, 14, 15, 24, 25, 34, 35, 44, 45, 54, 55, 64, 65, 74, 75, 84, 85, 94, 95]
     
 matrixOrdenada =   [9,10,29,30,49,50,69,70,89,90,109,110,129,130,149,
             8,11,28,31,48,51,68,71,88,91,108,111,128,131,148,
@@ -97,6 +97,7 @@ matrixOrdenada =   [9,10,29,30,49,50,69,70,89,90,109,110,129,130,149,
             1,18,21,38,41,58,61,78,81,98,101,118,121,138,141,
             0,19,20,39,40,59,60,79,80,99,100,119,120,139,140]
 
+#for 5x5 letter font, i moved the initial rows to the middel
 matrixGirada = [7,12,27,32,47,52,67,72,87,92,107,112,127,132,147,
             6,13,26,33,46,53,66,73,86,93,106,113,126,133,146,
             5,14,25,34,45,54,65,74,85,94,105,114,125,134,145,
